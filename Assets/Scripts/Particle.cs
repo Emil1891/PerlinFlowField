@@ -1,11 +1,8 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Particle : MonoBehaviour
 {
-    private MapGrid Grid;
+    private MapGrid grid;
 
     private Vector3 velocity = Vector2.zero;
 
@@ -13,25 +10,33 @@ public class Particle : MonoBehaviour
     
     [SerializeField] private float maxSpeed = 5f;
 
-    private Camera cam; 
+    private Camera cam;
+
+    private float xLeftBound, xRightBound, yBottomBound, yTopBound; 
 
     private void Start()
     {
-        Grid = FindObjectOfType<MapGrid>(); 
+        grid = FindObjectOfType<MapGrid>(); 
         
         cam = Camera.main;
+
+        // Set camera bounds so particles can "loop" the screen 
+        xLeftBound = cam.ViewportToWorldPoint(Vector3.zero).x;
+        xRightBound = cam.ViewportToWorldPoint(Vector3.right).x;
+        yBottomBound = cam.ViewportToWorldPoint(Vector3.zero).y;
+        yTopBound = cam.ViewportToWorldPoint(Vector3.up).y;
     }
 
     private void Update()
     {
-        Vector3 direction = Grid.GetNodeFromWorldPoint(transform.position).Direction;
+        Vector3 direction = grid.GetNodeFromWorldPoint(transform.position).Direction;
 
-        velocity += direction * acceleration;
+        velocity += direction * (acceleration * Time.deltaTime); 
         
-        // clamp velocity (add friction instead?)
+        // clamp velocity (add friction/viscosity instead?)
         if (velocity.magnitude > maxSpeed)
-            velocity = velocity.normalized * maxSpeed; 
-        
+            velocity = velocity.normalized * maxSpeed;
+
         transform.position += velocity * Time.deltaTime; 
         
         CheckScreenBounds(); 
@@ -41,19 +46,20 @@ public class Particle : MonoBehaviour
     private void CheckScreenBounds()
     {
         // Ranges from 0 to 1 so off screen < 0 and > 1
-        Vector3 viewportPos = cam.WorldToViewportPoint(transform.position);
-
-        Vector3 newPos = transform.position; 
+        Vector3 startPos = transform.position;
+        Vector3 viewportPos = cam.WorldToViewportPoint(startPos);
+        
+        Vector3 newPos = startPos;
         
         if (viewportPos.x > 1)
-            newPos.x = cam.ViewportToWorldPoint(Vector3.zero).x; // Only after the world coord at 0 viewport 
+            newPos.x = xLeftBound; 
         else if (viewportPos.x < 0)
-            newPos.x = cam.ViewportToWorldPoint(Vector3.right).x; 
+            newPos.x = xRightBound; 
         
         if (viewportPos.y > 1)
-            newPos.y = cam.ViewportToWorldPoint(Vector3.zero).y; 
+            newPos.y = yBottomBound; 
         else if(viewportPos.y < 0)
-            newPos.y = cam.ViewportToWorldPoint(Vector3.up).y; 
+            newPos.y = yTopBound; 
         
         transform.position = newPos;
     }

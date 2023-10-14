@@ -18,14 +18,10 @@ public class MapGrid : MonoBehaviour
 
     // A higher value results in more drastic direction changes between nearby nodes 
     [Range(1, 15)] 
-    [SerializeField] private int directionChangeMultiplier = 8; 
+    [SerializeField] private float directionChangeMultiplier = 8; 
 
     private void Start()
     {
-        #if UNITY_EDITOR
-            UnityEditor.EditorWindow.FocusWindowIfItsOpen(typeof(UnityEditor.SceneView));
-        #endif
-
         nodeDiameter = nodeRadius * 2; 
         gridXLength = Mathf.RoundToInt(gridSize.x / nodeDiameter); 
         gridYLength = Mathf.RoundToInt(gridSize.y / nodeDiameter);
@@ -34,7 +30,7 @@ public class MapGrid : MonoBehaviour
 
     private void Update()
     {
-        foreach (var node in grid)
+        foreach (Node node in grid)
         {
             node.Direction = GetNodeDirection(node.GridX, node.GridY);
         }
@@ -65,6 +61,7 @@ public class MapGrid : MonoBehaviour
 
     private Vector2 GetNodeDirection(int x, int y)
     {
+        // Reworked from: https://youtu.be/na7LuZsW2UM?si=9KrNbO8zcOwoBz33 
         float perlinNoise = Mathf.PerlinNoise(x / (float)gridXLength, y / (float)gridYLength) * Mathf.PI * directionChangeMultiplier; 
         //Debug.Log($"Perlin noise value: {perlinNoise}"); 
 
