@@ -1,35 +1,41 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class MapGrid : MonoBehaviour
 {
+    [Header("Grid")]
+    
     [SerializeField] private Vector2 gridSize; // (x, y) 
+    [SerializeField] private float nodeRadius; // radius of each node 
 
-    [SerializeField] private float nodeRadius; // radius of each node
+    [Header("Direction")]
+    
+    // Determines how fast the directions should rotate 
+    [Range(0, 2)]  
+    [SerializeField] private float timeChangeMultiplier = 0.05f; 
+
+    // Sets how drastic direction changes are between nearby nodes 
+    [Range(2, 15)] 
+    [SerializeField] private float directionChangeMultiplier = 8; 
+    
     private float nodeDiameter;
-
+    
     private int gridXLength, gridYLength; 
 
     private Node[,] grid;
 
     private Vector3 gridBottomLeft;
 
-    // A higher value results in more drastic direction changes between nearby nodes 
-    [Range(1, 15)] 
-    [SerializeField] private float directionChangeMultiplier = 8; 
-
     private void Start()
     {
         nodeDiameter = nodeRadius * 2; 
         gridXLength = Mathf.RoundToInt(gridSize.x / nodeDiameter); 
         gridYLength = Mathf.RoundToInt(gridSize.y / nodeDiameter);
-        CreateGrid(); 
+        CreateGrid();
     }
 
     private void Update()
     {
+        // Update directions in nodes 
         foreach (Node node in grid)
         {
             node.Direction = GetNodeDirection(node.GridX, node.GridY);
@@ -61,9 +67,10 @@ public class MapGrid : MonoBehaviour
 
     private Vector2 GetNodeDirection(int x, int y)
     {
-        // Reworked from: https://youtu.be/na7LuZsW2UM?si=9KrNbO8zcOwoBz33 
-        float perlinNoise = Mathf.PerlinNoise(x / (float)gridXLength, y / (float)gridYLength) * Mathf.PI * directionChangeMultiplier; 
-        //Debug.Log($"Perlin noise value: {perlinNoise}"); 
+        // Perlin noise function returns a value between 0 and 1 which is then multiplied with at least 2 * PI
+        // to make a full 360 degree rotation possible, adding time to make the directions rotate with time 
+        float perlinNoise = Mathf.PerlinNoise(x / (float)gridXLength, y / (float)gridYLength) * 
+            Mathf.PI * directionChangeMultiplier + Time.timeSinceLevelLoad * timeChangeMultiplier;
 
         return new Vector2(Mathf.Cos(perlinNoise), Mathf.Sin(perlinNoise)).normalized; 
     }
@@ -81,29 +88,6 @@ public class MapGrid : MonoBehaviour
         return grid[x, y];
     }
 
-    public HashSet<Node> GetNeighbours(Node node)
-    {
-        HashSet<Node> neighbours = new();
-
-        for(int x = -1; x <= 1; x++) // 1 step left, middle and 1 step right 
-        {
-            for(int y = -1; y <= 1; y++) // 1 step down, middle and 1 step up 
-            {
-                if (x == 0 && y == 0) // itself 
-                    continue;
-
-                int xCoord = node.GridX + x; // grid indexes 
-                int yCoord = node.GridY + y;
-
-                // if coordinate is within array bounds 
-                if (xCoord > 0 && xCoord < gridXLength && yCoord > 0 && yCoord < gridYLength)
-                    neighbours.Add(grid[xCoord, yCoord]); 
-            }
-        }
-
-        return neighbours; 
-    }
-
     public Node GetNode(int x, int y)
     {
         return grid[x, y];
@@ -119,7 +103,7 @@ public class MapGrid : MonoBehaviour
 
         foreach (Node node in grid)
         {
-            Gizmos.color = Color.black;
+            Gizmos.color = Color.white;
             
             // Draw node 
             Gizmos.DrawWireCube(node.WorldCoordinate, new Vector3(nodeDiameter, nodeDiameter, 1));

@@ -2,21 +2,47 @@ using UnityEngine;
 
 public class Particle : MonoBehaviour
 {
-    private MapGrid grid;
+    [Header("Design")]
+    
+    [SerializeField] private Color startColor = Color.white;
+    [SerializeField] private Color endColor = Color.white;
 
-    private Vector3 velocity = Vector2.zero;
+    [SerializeField] private SpriteRenderer ren;
 
+    // If a random color should be assigned between start and end color 
+    [SerializeField] private bool randomStartColorBetweenStartEnd = false; 
+    
+    // Gives a totally random color 
+    [SerializeField] private bool totallyRandomStartColor = false; 
+    
+    // If the color should lerp between start and end 
+    [SerializeField] private bool lerpColor = true;
+
+    // How much color lerp should increment each second 
+    [Range(0f, 0.5f)] 
+    [SerializeField] private float colorLerpSpeed = 0.1f; 
+    
+    [Header("Movement")]
+    
+    [SerializeField] private float maxSpeed = 0.5f;
+    
     [SerializeField] private float acceleration = 1f; 
     
-    [SerializeField] private float maxSpeed = 5f;
+    private Vector3 velocity = Vector2.zero;
+    
+    private static MapGrid grid; 
 
     private Camera cam;
 
-    private float xLeftBound, xRightBound, yBottomBound, yTopBound; 
+    // Screen bounds 
+    private float xLeftBound, xRightBound, yBottomBound, yTopBound;
 
+    private float colorLerpValue = 0f; 
+    
     private void Start()
     {
-        grid = FindObjectOfType<MapGrid>(); 
+        if(!grid)
+            grid = FindObjectOfType<MapGrid>(); 
         
         cam = Camera.main;
 
@@ -25,9 +51,29 @@ public class Particle : MonoBehaviour
         xRightBound = cam.ViewportToWorldPoint(Vector3.right).x;
         yBottomBound = cam.ViewportToWorldPoint(Vector3.zero).y;
         yTopBound = cam.ViewportToWorldPoint(Vector3.up).y;
+
+        if (totallyRandomStartColor)
+        {
+            ren.color = new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f)); 
+        }
+        else if (randomStartColorBetweenStartEnd)
+        {
+            colorLerpValue = Random.Range(0f, 1f); // Set start lerp value to match the randomly assigned color 
+            ren.color = Color.Lerp(startColor, endColor, colorLerpValue);
+        } else 
+            ren.color = startColor;
     }
 
     private void Update()
+    {
+        UpdatePosition(); 
+
+        UpdateColor(); 
+        
+        CheckScreenBounds(); 
+    }
+
+    private void UpdatePosition()
     {
         Vector3 direction = grid.GetNodeFromWorldPoint(transform.position).Direction;
 
@@ -37,9 +83,25 @@ public class Particle : MonoBehaviour
         if (velocity.magnitude > maxSpeed)
             velocity = velocity.normalized * maxSpeed;
 
-        transform.position += velocity * Time.deltaTime; 
+        transform.position += velocity * Time.deltaTime;
+    }
+
+    private void UpdateColor()
+    {
+        if (!lerpColor)
+            return;
+
+        ren.color = Color.Lerp(startColor, endColor, colorLerpValue);
+
+        colorLerpValue += colorLerpSpeed * Time.deltaTime; 
         
-        CheckScreenBounds(); 
+        // If we have achieved the end color, then it should reverse 
+        if (colorLerpValue >= 1)
+        {
+            colorLerpValue = 0;
+            // Fancy C# swap without a temp variable 
+            (startColor, endColor) = (endColor, startColor);
+        }
     }
 
     // Adjusts the particle's position if outside the screen to "loop" it 

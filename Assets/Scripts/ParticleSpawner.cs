@@ -1,4 +1,3 @@
-using Unity.Mathematics;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -11,15 +10,15 @@ public class ParticleSpawner : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        var cam = Camera.main;
+        Camera cam = Camera.main;
 
         for (int i = 0; i < spawnCount; i++)
         {
-            var spawnPos = new Vector2(Random.Range(0f, 1f), Random.Range(0f, 1f));
+            var spawnPos = new Vector2(Random.Range(0f, 1f), Random.Range(0f, 1f)); 
 
             spawnPos = cam.ViewportToWorldPoint(spawnPos);
 
-            Instantiate(Particle, spawnPos, quaternion.identity);
+            Instantiate(Particle, spawnPos, Quaternion.identity);
         }
     }
 }

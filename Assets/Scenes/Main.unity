@@ -167,7 +167,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 378e5ba5633ece94b9f6f22cb19372e6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spawnCount: 5000
+  spawnCount: 500
   Particle: {fileID: 6682945874274613850, guid: f35400f24d49d53418561e61cc5a4322, type: 3}
 --- !u!1 &519420028
 GameObject:
@@ -204,7 +204,7 @@ Camera:
   m_GameObject: {fileID: 519420028}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 2
+  m_ClearFlags: 3
   m_BackGroundColor: {r: 0.0754717, g: 0.0754717, b: 0.0754717, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
@@ -226,7 +226,7 @@ Camera:
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 2147483647
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -315,9 +315,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: afb44cee955b7c742ae180a3bc68f158, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gridSize: {x: 20, y: 12}
-  nodeRadius: 0.1
-  directionChangeMultiplier: 4
+  gridSize: {x: 19, y: 11}
+  nodeRadius: 0.2
+  timeChangeMultiplier: 0.05
+  directionChangeMultiplier: 8
 --- !u!4 &1392076587
 Transform:
   m_ObjectHideFlags: 0
